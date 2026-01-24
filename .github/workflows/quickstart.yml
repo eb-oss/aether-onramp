@@ -105,8 +105,19 @@ jobs:
         run: |
           source $HOME/ubuntu_venv/bin/activate
           sleep 60
-          make aether-gnbsim-run
-          docker exec gnbsim-1 cat summary.log
+          # Retry logic (2 attempts) to match Jenkins retry(2)
+          for attempt in 1 2; do
+            echo "Attempt $attempt of 2"
+            if make aether-gnbsim-run; then
+              docker exec gnbsim-1 cat summary.log
+              break
+            elif [ $attempt -eq 2 ]; then
+              echo "Failed after 2 attempts"
+              exit 1
+            fi
+            echo "Retrying..."
+            sleep 10
+          done
 
       - name: Validate Results
         continue-on-error: false
