@@ -66,7 +66,7 @@ jobs:
           # Get network information
           MYIP=$(hostname -I | awk '{print $1}')
           echo "MY IP is: $MYIP"
-          MYIFC=$(ip route get 8.8.8.8 | awk '{print $5}' | awk '/.*/')
+          MYIFC=$(ip route get 8.8.8.8 | grep -oP 'dev \K\S+' || echo "eth0")
           echo "MY IFC is: $MYIFC"
           
           # Create hosts.ini
@@ -192,10 +192,12 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          source $HOME/ubuntu_venv/bin/activate || true
-          make gnbsim-uninstall || true
-          make 5gc-uninstall || true
-          make k8s-uninstall || true
+          if [ -f $HOME/ubuntu_venv/bin/activate ]; then
+            source $HOME/ubuntu_venv/bin/activate
+          fi
+          make gnbsim-uninstall || echo "Failed to uninstall gnbsim"
+          make 5gc-uninstall || echo "Failed to uninstall 5gc"
+          make k8s-uninstall || echo "Failed to uninstall k8s"
 
       - name: Notify on Failure
         if: failure()
