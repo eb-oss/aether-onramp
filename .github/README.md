@@ -29,15 +29,15 @@ The workflow requires the following GitHub secret to be configured in your repos
 
 1. **Checkout repository**: Clones the repo with all submodules
 2. **Set up Python**: Installs Python and creates a virtual environment with Ansible
-3. **Install kubectl**: Uses Azure's setup-kubectl action (default/latest version)
-4. **Install Helm**: Uses Azure's setup-helm action (default/latest version)
+3. **Install kubectl**: Uses Azure's setup-kubectl action (default/latest version as specified in requirements)
+4. **Install Helm**: Uses Azure's setup-helm action (default/latest version as specified in requirements)
 5. **Configure OnRamp**: Sets up SSH keys, generates hosts.ini, configures vars/main.yml
 6. **Install Aether**: Installs Kubernetes, 5GC core, and gNBsim
-7. **Run gNBsim**: Executes the gNBsim test
-8. **Validate Results**: Checks that tests passed
+7. **Run gNBsim**: Executes the gNBsim test with retry logic (2 attempts)
+8. **Validate Results**: Checks that tests passed using the same validation pattern as Jenkins
 9. **Retrieve Logs**: Collects logs from all components
 10. **Archive Artifacts**: Uploads logs as workflow artifacts
-11. **Cleanup**: Uninstalls all components (always runs)
+11. **Cleanup**: Uninstalls all components (always runs, even on failure)
 12. **Notify on Failure**: Logs failure information (can be extended with Slack notifications)
 
 ### Triggering the Workflow
@@ -78,6 +78,12 @@ To customize the workflow:
 2. **Adjust timeout**: Modify `timeout-minutes` under the job definition
 3. **Add Slack notifications**: Uncomment and configure the Slack notification step with `secrets.SLACK_WEBHOOK_URL`
 4. **Modify test parameters**: Edit the Make commands in the "Install Aether" and "Run gNBsim" steps
+5. **Pin tool versions**: If you need stable versions instead of 'latest', modify the `version` parameter for kubectl and helm actions (e.g., `version: 'v1.28.0'` or `version: 'v3.12.0'`)
+
+### Important Notes
+
+- **Tool Versions**: The workflow uses 'latest' versions for kubectl and helm as per the requirements. This ensures the most recent stable versions are used. If your environment requires specific versions for compatibility, you can pin them in the workflow file.
+- **Validation Pattern**: The gNBsim validation uses the exact same grep pattern as the Jenkins workflow (`grep "Ue's Passed" | grep -v "Passed: 0"`). This matches the expected output format from gNBsim.
 
 ### Troubleshooting
 
