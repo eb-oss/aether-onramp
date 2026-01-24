@@ -15,11 +15,13 @@ The `quickstart.yml` workflow replicates the functionality of the Jenkins groovy
 
 ### Required Secrets
 
-The workflow requires the following GitHub secret to be configured in your repository:
+**Note**: For GitHub-hosted runners (`ubuntu-latest`), no secrets are required as the workflow runs locally without SSH. The `AETHER_QA_PEM` secret is optional and only needed if you plan to configure the workflow for remote execution.
 
-- `AETHER_QA_PEM`: SSH private key for authenticating to the target nodes
+Optional secret for future remote node configuration:
+
+- `AETHER_QA_PEM`: SSH private key for authenticating to remote target nodes (not used in default configuration)
   - This replaces the PEM file that was previously stored on the Jenkins builder at `/home/ubuntu/aether-qa.pem`
-  - To add this secret:
+  - To add this secret (if needed for custom configuration):
     1. Go to your repository's Settings → Secrets and variables → Actions
     2. Click "New repository secret"
     3. Name: `AETHER_QA_PEM`
@@ -53,20 +55,23 @@ The workflow can be triggered in three ways:
 The GitHub Actions workflow includes the following changes from the original Jenkins groovy script:
 
 1. **Runtime Installation**: kubectl, helm, and Python virtualenv are installed at runtime instead of relying on pre-installed tools
-2. **Secret Management**: SSH private key is stored as a GitHub secret (`AETHER_QA_PEM`) instead of a file on the builder
-3. **Self-Contained**: All dependencies are installed fresh for each run
-4. **Artifact Handling**: Uses GitHub Actions native artifact upload instead of Jenkins' archive system
-5. **Error Handling**: Enhanced with conditional steps and proper cleanup
+2. **Local Execution**: Ansible runs with `ansible_connection=local` instead of SSH, since the workflow runs directly on the runner
+3. **Secret Management**: SSH private key is stored as a GitHub secret (`AETHER_QA_PEM`) for potential future use with remote nodes
+4. **Self-Contained**: All dependencies are installed fresh for each run
+5. **Artifact Handling**: Uses GitHub Actions native artifact upload instead of Jenkins' archive system
+6. **Error Handling**: Enhanced with conditional steps and proper cleanup
 
 ### Runner Requirements
 
 For **ubuntu-latest** runners (GitHub-hosted):
 - The workflow installs all required dependencies automatically
+- Ansible runs locally (no SSH required)
 - Requires sufficient disk space and memory for Kubernetes and 5GC components
 
 For **self-hosted** runners:
 - Ensure Docker is installed and the runner user has access to Docker
 - Ensure the runner has sudo access (passwordless sudo recommended)
+- Ansible runs locally (no SSH server required)
 - Configure the runner with appropriate labels
 - Use the `agent_label` input when manually dispatching the workflow
 

@@ -62,30 +62,25 @@ jobs:
         run: |
           source $HOME/ubuntu_venv/bin/activate
           
-          # Setup SSH key
-          mkdir -p $HOME/.ssh
-          echo "$SSH_PRIVATE_KEY" > $HOME/.ssh/aether-qa.pem
-          chmod 600 $HOME/.ssh/aether-qa.pem
-          
           # Get network information
           MYIP=$(hostname -I | awk '{print $1}')
           echo "MY IP is: $MYIP"
           MYIFC=$(ip route get 8.8.8.8 | awk '/dev/ {print $5; exit}' || echo "eth0")
           echo "MY IFC is: $MYIFC"
           
-          # Create hosts.ini
+          # Create hosts.ini for local execution (no SSH needed on GitHub runner)
           cat > hosts.ini << EOF
           [all]
-          node1 ansible_host=$MYIP ansible_user=ubuntu ansible_ssh_private_key_file=$HOME/.ssh/aether-qa.pem ansible_sudo_pass=ubuntu
+          localhost ansible_connection=local
 
           [master_nodes]
-          node1
+          localhost
 
           [worker_nodes]
           #node2
 
           [gnbsim_nodes]
-          node1
+          localhost
           EOF
           
           # Configure vars/main.yml
