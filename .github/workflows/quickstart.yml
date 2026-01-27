@@ -94,6 +94,9 @@ jobs:
       - name: Install Aether
         run: |
           source $HOME/ubuntu_venv/bin/activate
+          sed -i '97a\
+              sleep 60
+          ' /home/runner/work/aether-onramp/aether-onramp/deps/k8s/roles/rke2/tasks/install.yml
           make aether-k8s-install
           make aether-5gc-install
           make aether-gnbsim-install
