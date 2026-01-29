@@ -44,7 +44,7 @@ jobs:
           python -m venv $HOME/ubuntu_venv
           source $HOME/ubuntu_venv/bin/activate
           pip install --upgrade pip
-          pip install ansible
+          pip install ansible requests
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
@@ -54,7 +54,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: 'latest'
+          version: 'v3.17.1'
 
       - name: Configure OnRamp
         env:
